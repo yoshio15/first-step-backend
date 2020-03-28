@@ -24,7 +24,7 @@ Resources:
   GetWorksListFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-works-list/
+      CodeUri: functions/works/get-works-list/
       Handler: app.lambdaHandler
       Runtime: nodejs12.x
       Role: !GetAtt DynamoAccessRole.Arn
