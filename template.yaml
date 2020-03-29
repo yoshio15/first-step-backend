@@ -35,6 +35,20 @@ Resources:
             Path: /get-works-list
             Method: get
 
+  PostWorkFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/works/post-work/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt DynamoAccessRole.Arn
+      Events:
+        PostWork:
+          Type: Api
+          Properties:
+            Path: /post-work
+            Method: post
+
   # DynamoDB
   WorksTable:
     Type: AWS::Serverless::SimpleTable
@@ -65,4 +79,5 @@ Resources:
               - Effect: "Allow"
                 Action:
                   - dynamodb:Scan
+                  - dynamodb:PutItem
                 Resource: !GetAtt WorksTable.Arn
