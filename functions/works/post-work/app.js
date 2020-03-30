@@ -2,6 +2,7 @@
 
 const aws = require('aws-sdk');
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
+let work_id;
 
 const postWork = event => {
   return new Promise((resolve, reject) => {
@@ -36,8 +37,9 @@ const generateRespons = (items, status) => {
 }
 
 const formatItem = req => {
+  work_id = getUniqueId()
   return {
-    'work_id': getUniqueId(),
+    'work_id': work_id,
     'title': req.title,
     'description': req.description,
     'user_id': '0001', // req.userId,
@@ -58,7 +60,7 @@ const getUnixTime = () => {
 exports.lambdaHandler = function (event, context, callback) {
   postWork(event)
     .then(res => {
-      const response = generateRespons(JSON.stringify(res), 200)
+      const response = generateRespons(JSON.stringify({ work_id }), 200)
       callback(null, response);
     })
     .catch(err => {
