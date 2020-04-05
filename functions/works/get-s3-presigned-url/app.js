@@ -1,20 +1,22 @@
-'use strict';
+const AWS = require('aws-sdk');
+const S3 = new AWS.S3();
+const BUCKET_NAME = 'dev-first-step-works';
 
-const aws = require('aws-sdk');
-const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
+AWS.config.region = 'ap-northeast-1';
 
-const getWorksList = () => {
+const getS3PresignedUrl = reqBody => {
+  console.info('REQUEST_BODY: ' + JSON.stringify(reqBody))
   return new Promise((resolve, reject) => {
-    const params = { TableName: 'works-table' };
-    docClient.scan(params, function (err, data) {
-      if (err) {
-        console.log(err);
-        reject(err);
-      } else {
-        console.log(data.Items);
-        resolve(data.Items)
-      }
-    })
+    const params = {
+      Bucket: BUCKET_NAME,
+      Key: reqBody.work_id,
+      ContentType: 'text/html',
+      Expires: 10
+    };
+    S3.getSignedUrl('putObject', params, function (err, url) {
+      if (err) return reject(err)
+      resolve(url);
+    });
   })
 }
 
@@ -33,8 +35,8 @@ const generateRespons = (items, status) => {
 }
 
 exports.lambdaHandler = function (event, context, callback) {
-  console.info(`event: ${event}`)
-  getWorksList()
+  console.info(`event: ${JSON.stringify(event)}`)
+  getS3PresignedUrl(event.pathParameters)
     .then(res => {
       const response = generateRespons(JSON.stringify(res), 200)
       console.info(`response: ${res}`)

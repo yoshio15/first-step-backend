@@ -36,10 +36,9 @@ const generateRespons = (items, status) => {
   return response
 }
 
-const formatItem = req => {
-  work_id = getUniqueId()
+const formatItem = (req) => {
   return {
-    'work_id': work_id,
+    'work_id': req.workId,
     'title': req.title,
     'description': req.description,
     'user_id': '0001', // req.userId,
@@ -48,23 +47,22 @@ const formatItem = req => {
   }
 }
 
-const getUniqueId = () => {
-  return Math.floor(1000 * Math.random()).toString(16) + Date.now().toString(16)
-}
-
 const getUnixTime = () => {
   const now = new Date()
   return Math.floor(now.getTime() / 1000)
 }
 
 exports.lambdaHandler = function (event, context, callback) {
+  console.info(`event: ${JSON.stringify(event)}`)
   postWork(event)
     .then(res => {
       const response = generateRespons(JSON.stringify({ work_id }), 200)
+      console.info(`response: ${res}`)
       callback(null, response);
     })
     .catch(err => {
       const response = generateRespons(JSON.stringify(err), 500)
+      console.error(`error: ${err}`)
       callback(null, response);
     })
 }; 

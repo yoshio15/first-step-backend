@@ -34,6 +34,11 @@ Resources:
           Properties:
             Path: /get-works-list
             Method: get
+  GetWorksListFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetWorksListFunction}
+      RetentionInDays: 3
 
   PostWorkFunction:
     Type: AWS::Serverless::Function
@@ -48,6 +53,30 @@ Resources:
           Properties:
             Path: /post-work
             Method: post
+  PostWorkFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${PostWorkFunction}
+      RetentionInDays: 3
+
+  GetS3PresignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/works/get-s3-presigned-url/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt S3AccessRole.Arn
+      Events:
+        PostWork:
+          Type: Api
+          Properties:
+            Path: /get-s3-presigned-url/{work_id}
+            Method: get
+  GetS3PresignedUrlFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetS3PresignedUrlFunction}
+      RetentionInDays: 3
 
   # DynamoDB
   WorksTable:
@@ -57,8 +86,38 @@ Resources:
       PrimaryKey:
         Name: work_id
         Type: String
-
+  
   # IAM Role
+  S3AccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Description: "Role for accessing S3"
+      Path: "/"
+      Policies:
+        - PolicyName: "s3-access-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+              # Action種類 https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/dev/using-with-s3-actions.html
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: 'arn:aws:s3:::dev-first-step-works/*'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                Resource: "arn:aws:logs:ap-northeast-1:*:*"
+
   DynamoAccessRole:
     Type: AWS::IAM::Role
     Properties:
@@ -81,3 +140,47 @@ Resources:
                   - dynamodb:Scan
                   - dynamodb:PutItem
                 Resource: !GetAtt WorksTable.Arn
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                Resource: "arn:aws:logs:ap-northeast-1:*:*"
+            # - Effect: Allow
+            #   Action: 
+            #     - s3:ListBucket
+            #   Resource: !GetAtt FirstStepBackendLogs.Arn
+            # - Effect: Allow
+            #   Action:
+            #     - s3:GetObject
+            #     - s3:PutObject
+            #   Resource: !Sub "arn:aws:s3:::${FirstStepBackendLogs}/*"
+
+  # # S3
+  # FirstStepBackendLogs:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: first-step-backend-logs
+
+  # # S3 Bucket Policy
+  # FirstStepBackendLogsPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties: 
+  #     Bucket: first-step-backend-logs
+  #     PolicyDocument:
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: logs.ap-northeast-1.amazonaws.com
+  #           Action:
+  #             - s3:GetBucketAcl
+  #           Resource: !GetAtt FirstStepBackendLogs.Arn
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: logs.ap-northeast-1.amazonaws.com
+  #           Action:
+  #             - s3:PutObject
+  #           Resource: !Sub "arn:aws:s3:::${FirstStepBackendLogs}/*"
+  #           Condition:
+  #             StringEquals:
+  #               s3:x-amz-acl: bucket-owner-full-control
