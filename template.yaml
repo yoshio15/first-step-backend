@@ -40,6 +40,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${GetWorksListFunction}
       RetentionInDays: 3
 
+  GetWorkFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/works/get-work/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt DynamoAccessRole.Arn
+      Events:
+        GetWorks:
+          Type: Api
+          Properties:
+            Path: /get-work
+            Method: get
+  GetWorkFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetWorkFunction}
+      RetentionInDays: 3
+
   PostWorkFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -139,6 +158,7 @@ Resources:
                 Action:
                   - dynamodb:Scan
                   - dynamodb:PutItem
+                  - dynamodb:GetItem
                 Resource: !GetAtt WorksTable.Arn
               - Effect: Allow
                 Action:
