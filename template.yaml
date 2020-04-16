@@ -51,7 +51,7 @@ Resources:
         GetWorks:
           Type: Api
           Properties:
-            Path: /get-work
+            Path: /get-work/{work_id}
             Method: get
   GetWorkFunctionLogGroup:
     Type: AWS::Logs::LogGroup

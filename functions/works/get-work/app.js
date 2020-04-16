@@ -37,7 +37,7 @@ const generateResponse = (items, status) => {
 
 exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
-  getWorkById(event.body.workId)
+  getWorkById(event.pathParameters.work_id)
     .then(res => {
       const response = generateResponse(JSON.stringify(res), 200)
       console.info(`response: ${JSON.stringify(res)}`)
