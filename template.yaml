@@ -97,6 +97,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${GetS3PresignedUrlFunction}
       RetentionInDays: 3
 
+  GetUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/users/get-user/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt DynamoAccessRole.Arn
+      Events:
+        GetWorks:
+          Type: Api
+          Properties:
+            Path: /get-user/{user_id}
+            Method: get
+  GetUserFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetUserFunction}
+      RetentionInDays: 3
+
   # DynamoDB
   WorksTable:
     Type: AWS::Serverless::SimpleTable
@@ -106,6 +125,14 @@ Resources:
         Name: work_id
         Type: String
   
+  UsersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: users-table
+      PrimaryKey:
+        Name: user_id
+        Type: String
+
   # IAM Role
   S3AccessRole:
     Type: AWS::IAM::Role
@@ -160,6 +187,12 @@ Resources:
                   - dynamodb:PutItem
                   - dynamodb:GetItem
                 Resource: !GetAtt WorksTable.Arn
+              - Effect: "Allow"
+                Action:
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource: !GetAtt UsersTable.Arn
               - Effect: Allow
                 Action:
                   - logs:PutLogEvents
