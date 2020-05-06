@@ -103,7 +103,7 @@ Resources:
       CodeUri: functions/users/get-user/
       Handler: app.lambdaHandler
       Runtime: nodejs12.x
-      Role: !GetAtt DynamoAccessRole.Arn
+      Role: !GetAtt UsersInfoAccessRole.Arn
       Events:
         GetWorks:
           Type: Api
@@ -209,6 +209,41 @@ Resources:
             #     - s3:PutObject
             #   Resource: !Sub "arn:aws:s3:::${FirstStepBackendLogs}/*"
 
+  UsersInfoAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Description: "Role for accessing S3"
+      Path: "/"
+      Policies:
+        - PolicyName: "users-info-access-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource: !GetAtt UsersTable.Arn
+              - Effect: "Allow"
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: 'arn:aws:s3:::dev-first-step-users/*'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                Resource: "arn:aws:logs:ap-northeast-1:*:*"
+      
   # # S3
   # FirstStepBackendLogs:
   #   Type: AWS::S3::Bucket

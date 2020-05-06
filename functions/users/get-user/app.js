@@ -1,6 +1,7 @@
 'use strict';
 
 const aws = require('aws-sdk');
+const s3 = new aws.S3()
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
 
 const getUserById = userId => {
@@ -21,6 +22,25 @@ const getUserById = userId => {
   })
 }
 
+const getUserIcon = userId => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: "dev-first-step-users",
+      Key: "default_icon/DEFAULT_ICON.png",
+      // Key: `icons/${userId}.png`
+    };
+    s3.getObject(params, function (err, res) {
+      if (err) {
+        console.info(err)
+        reject(err)
+      } else {
+        console.info(res)
+        resolve(res)
+      }
+    })
+  })
+}
+
 const generateResponse = (items, status) => {
   const response = {
     "statusCode": status,
@@ -36,10 +56,11 @@ const generateResponse = (items, status) => {
 }
 
 exports.lambdaHandler = function (event, context, callback) {
+  const userId = event.pathParameters.user_id
   console.info(`event: ${JSON.stringify(event)}`)
-  getUserById(event.pathParameters.user_id)
+  Promise.all([getUserById(userId), getUserIcon(userId)])
     .then(res => {
-      const response = generateResponse(JSON.stringify(res), 200)
+      const response = generateResponse(JSON.stringify({ ...res[0], ...res[1] }), 200)
       console.info(`response: ${JSON.stringify(res)}`)
       callback(null, response);
     })
