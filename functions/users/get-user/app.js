@@ -26,22 +26,23 @@ const getUserIcon = userId => {
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: "dev-first-step-users",
-      Key: "default_icon/DEFAULT_ICON.png",
-      // Key: `icons/${userId}.png`
+      Key: `icons/${userId}.png`
+      // Key: "default_icon/DEFAULT_ICON.png",
     };
     s3.getObject(params, function (err, res) {
       if (err) {
         console.info(err)
         reject(err)
       } else {
-        console.info(res)
-        resolve(res)
+        console.info(`PURE_RES: ${JSON.stringify(res)}`)
+        resolve({ icon_binary: res.Body.toString('base64') })
       }
     })
   })
 }
 
 const generateResponse = (items, status) => {
+  console.info(`RESPOSE_ITEMS: ${items}`);
   const response = {
     "statusCode": status,
     "headers": {
@@ -50,7 +51,7 @@ const generateResponse = (items, status) => {
       "Access-Control-Allow-Credentials": "true"
     },
     "body": items,
-    "isBase64Encoded": false
+    "isBase64Encoded": true
   };
   return response
 }
@@ -60,8 +61,8 @@ exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
   Promise.all([getUserById(userId), getUserIcon(userId)])
     .then(res => {
+      console.info(`resoleved promise response: ${JSON.stringify(res)}`)
       const response = generateResponse(JSON.stringify({ ...res[0], ...res[1] }), 200)
-      console.info(`response: ${JSON.stringify(res)}`)
       callback(null, response);
     })
     .catch(err => {
