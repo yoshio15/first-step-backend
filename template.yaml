@@ -234,6 +234,11 @@ Resources:
                 Resource: !GetAtt UsersTable.Arn
               - Effect: "Allow"
                 Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt WorksTable.Arn
+              - Effect: "Allow"
+                Action:
                   - s3:GetObject
                   - s3:PutObject
                 Resource: 'arn:aws:s3:::dev-first-step-users/*'
