@@ -105,7 +105,7 @@ Resources:
       Runtime: nodejs12.x
       Role: !GetAtt UsersInfoAccessRole.Arn
       Events:
-        GetWorks:
+        GetUser:
           Type: Api
           Properties:
             Path: /get-user/{user_id}
@@ -114,6 +114,25 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties: 
       LogGroupName: !Sub /aws/lambda/${GetUserFunction}
+      RetentionInDays: 3
+
+  UpdateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/users/update-user/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt UsersInfoAccessRole.Arn
+      Events:
+        UpdateUser:
+          Type: Api
+          Properties:
+            Path: /update-user
+            Method: post
+  UpdateUserFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${UpdateUserFunction}
       RetentionInDays: 3
 
   # DynamoDB
@@ -231,6 +250,7 @@ Resources:
                   - dynamodb:Scan
                   - dynamodb:PutItem
                   - dynamodb:GetItem
+                  - dynamodb:UpdateItem
                 Resource: !GetAtt UsersTable.Arn
               - Effect: "Allow"
                 Action:
