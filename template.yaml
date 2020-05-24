@@ -97,6 +97,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${GetS3PresignedUrlFunction}
       RetentionInDays: 3
 
+  GetS3PresignedUrlForUserIconFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/users/get-s3-presigned-url-for-user-icon/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt S3AccessRole.Arn
+      Events:
+        GetS3PresignedUrlForUserIcon:
+          Type: Api
+          Properties:
+            Path: /get-s3-presigned-url-for-user-icon/{user_id}/{content}/{type}
+            Method: get
+  GetS3PresignedUrlForUserIconFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetS3PresignedUrlForUserIconFunction}
+      RetentionInDays: 3
+
   GetUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -176,6 +195,11 @@ Resources:
                   - s3:GetObject
                   - s3:PutObject
                 Resource: 'arn:aws:s3:::dev-first-step-works/*'
+              - Effect: "Allow"
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: 'arn:aws:s3:::dev-first-step-users/*'
               - Effect: Allow
                 Action:
                   - logs:PutLogEvents
