@@ -9,10 +9,11 @@ const getS3PresignedUrl = reqBody => {
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: BUCKET_NAME,
-      Key: reqBody.user_id,
+      Key: `icons/${reqBody.user_id}.${reqBody.type}`,
       ContentType: `${reqBody.content}/${reqBody.type}`,
       Expires: 10
     };
+    console.info(`PARAMS: ${JSON.stringify((params))}`)
     S3.getSignedUrl('putObject', params, function (err, url) {
       if (err) return reject(err)
       resolve(url);
@@ -20,7 +21,7 @@ const getS3PresignedUrl = reqBody => {
   })
 }
 
-const generateResponse = (items, status) => {
+const generateRespons = (items, status) => {
   const response = {
     "statusCode": status,
     "headers": {
@@ -38,12 +39,12 @@ exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
   getS3PresignedUrl(event.pathParameters)
     .then(res => {
-      const response = generateResponse(JSON.stringify(res), 200)
+      const response = generateRespons(JSON.stringify(res), 200)
       console.info(`response: ${res}`)
       callback(null, response);
     })
     .catch(err => {
-      const response = generateResponse(JSON.stringify(err), 500)
+      const response = generateRespons(JSON.stringify(err), 500)
       console.error(`error: ${err}`)
       callback(null, response);
     })
