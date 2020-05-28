@@ -154,6 +154,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${UpdateUserFunction}
       RetentionInDays: 3
 
+  PostUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/users/post-user/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt UsersInfoAccessRole.Arn
+      Events:
+        PostUser:
+          Type: Api
+          Properties:
+            Path: /post-user
+            Method: post
+  PostUserFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${PostUserFunction}
+      RetentionInDays: 3
+
   # DynamoDB
   WorksTable:
     Type: AWS::Serverless::SimpleTable
