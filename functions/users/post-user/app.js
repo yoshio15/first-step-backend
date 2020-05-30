@@ -1,6 +1,9 @@
 'use strict';
 
 const aws = require('aws-sdk');
+const S3 = new aws.S3();
+const BUCKET_NAME = 'dev-first-step-users';
+const DEFAULT_ICON_PATH = 'default_icon/DEFAULT_ICON.png';
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
 let user_id;
 
@@ -19,6 +22,25 @@ const postUser = event => {
         resolve(data.Items)
       }
     })
+  })
+}
+
+const setUserIcon = () => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: BUCKET_NAME,
+      CopySource: `/${BUCKET_NAME}/${DEFAULT_ICON_PATH}`,
+      Key: `icons/${user_id}.png`
+    };
+    S3.copyObject(params, function (err, data) {
+      if (err) {
+        console.log(err, err.stack)
+        reject(err)
+      } else {
+        console.log(data)
+        resolve(data)
+      }
+    });
   })
 }
 
@@ -56,15 +78,15 @@ const getUnixTime = () => {
 exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
   user_id = generateUserId()
-  postUser(event)
+  Promise.all([postUser(event), setUserIcon()])
     .then(res => {
-      const response = generateResponse(JSON.stringify({ work_id }), 200)
-      console.info(`response: ${res}`)
+      const response = generateResponse(JSON.stringify({ user_id }), 200)
+      console.info(`response: ${JSON.stringify(res)}`)
       callback(null, response);
     })
     .catch(err => {
       const response = generateResponse(JSON.stringify(err), 500)
-      console.error(`error: ${err}`)
+      console.error(`error: ${JSON.stringify(err)}`)
       callback(null, response);
     })
 }; 
