@@ -1,6 +1,7 @@
 'use strict';
 
 const aws = require('aws-sdk');
+const s3 = new aws.S3()
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
 
 const getWorksList = () => {
@@ -18,7 +19,7 @@ const getWorksList = () => {
   })
 }
 
-const generateRespons = (items, status) => {
+const generateResponse = (items, status) => {
   const response = {
     "statusCode": status,
     "headers": {
@@ -27,22 +28,22 @@ const generateRespons = (items, status) => {
       "Access-Control-Allow-Credentials": "true"
     },
     "body": items,
-    "isBase64Encoded": false
+    "isBase64Encoded": true
   };
   return response
 }
 
 exports.lambdaHandler = function (event, context, callback) {
-  console.info(`event: ${event}`)
+  console.info(`event: ${JSON.stringify(event)}`)
   getWorksList()
     .then(res => {
-      const response = generateRespons(JSON.stringify(res), 200)
-      console.info(`response: ${res}`)
+      const response = generateResponse(JSON.stringify(res), 200)
+      console.info(`response: ${JSON.stringify(res)}`)
       callback(null, response);
     })
     .catch(err => {
-      const response = generateRespons(JSON.stringify(err), 500)
-      console.error(`error: ${err}`)
+      const response = generateResponse(JSON.stringify(err), 500)
+      console.error(`error: ${JSON.stringify(err)}`)
       callback(null, response);
     })
 }; 
