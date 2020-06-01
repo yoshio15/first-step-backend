@@ -174,14 +174,25 @@ Resources:
       RetentionInDays: 3
 
   # DynamoDB
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
   WorksTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
-      TableName: works-table
-      PrimaryKey:
-        Name: work_id
-        Type: String
-  
+      AttributeDefinitions: 
+        - AttributeName: "work_id"
+          AttributeType: "S"
+        - AttributeName: "user_id"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "work_id"
+          KeyType: "HASH"
+        - AttributeName: "user_id"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: "works-table"
+
   UsersTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
