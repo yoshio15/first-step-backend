@@ -3,11 +3,15 @@
 const aws = require('aws-sdk');
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
 
-const getWorkById = workId => {
+const getWorkById = reqParams => {
+  console.info(`WORK_ID: ${reqParams.workId}`)
   return new Promise((resolve, reject) => {
     const params = {
       TableName: 'works-table',
-      Key: { 'work_id': workId }
+      Key: {
+        'work_id': reqParams.work_id,
+        'user_id': reqParams.user_id
+      }
     };
     docClient.get(params, function (err, data) {
       if (err) {
@@ -37,7 +41,12 @@ const generateResponse = (items, status) => {
 
 exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
-  getWorkById(event.pathParameters.work_id)
+  const reqParams = event.pathParameters
+  // const reqParams = {
+  //   workId: '246172703ea235',
+  //   userId: '0001'
+  // }
+  getWorkById(reqParams)
     .then(res => {
       const response = generateResponse(JSON.stringify(res), 200)
       console.info(`response: ${JSON.stringify(res)}`)
