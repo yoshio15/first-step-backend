@@ -5,13 +5,12 @@ const S3 = new aws.S3();
 const BUCKET_NAME = 'dev-first-step-users';
 const DEFAULT_ICON_PATH = 'default_icon/DEFAULT_ICON.png';
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
-let user_id;
 
-const postUser = event => {
+const postUser = reqBody => {
   return new Promise((resolve, reject) => {
     const params = {
       TableName: 'users-table',
-      Item: formatItem(JSON.parse(event.body))
+      Item: formatItem(reqBody)
     };
     docClient.put(params, function (err, data) {
       if (err) {
@@ -25,12 +24,12 @@ const postUser = event => {
   })
 }
 
-const setUserIcon = () => {
+const setUserIcon = userId => {
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: BUCKET_NAME,
       CopySource: `/${BUCKET_NAME}/${DEFAULT_ICON_PATH}`,
-      Key: `icons/${user_id}.png`
+      Key: `icons/${userId}.png`
     };
     S3.copyObject(params, function (err, data) {
       if (err) {
@@ -60,14 +59,11 @@ const generateResponse = (items, status) => {
 
 const formatItem = (req) => {
   return {
-    'user_id': user_id,
+    'user_id': req.userId,
     'user_name': req.username,
-    'registered_at': getUnixTime()
+    'registered_at': getUnixTime(),
+    'user_icon_img': `${user_id}.png`
   }
-}
-
-const generateUserId = () => {
-  return Math.floor(10000000 * Math.random()).toString(16) + Date.now().toString(16)
 }
 
 const getUnixTime = () => {
@@ -77,8 +73,8 @@ const getUnixTime = () => {
 
 exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
-  user_id = generateUserId()
-  Promise.all([postUser(event), setUserIcon()])
+  const reqBody = JSON.parse(event.body)
+  Promise.all([postUser(reqBody), setUserIcon(reqBody.userId)])
     .then(res => {
       const response = generateResponse(JSON.stringify({ user_id }), 200)
       console.info(`response: ${JSON.stringify(res)}`)
