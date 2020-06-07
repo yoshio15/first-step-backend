@@ -135,6 +135,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${GetUserFunction}
       RetentionInDays: 3
 
+  GetUserIconImgFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/users/get-user-icon-img/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt UsersInfoAccessRole.Arn
+      Events:
+        GetUserIconImg:
+          Type: Api
+          Properties:
+            Path: /get-user-icon-img/{user_id}
+            Method: get
+  GetUserIconImgFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${GetUserIconImgFunction}
+      RetentionInDays: 3
+
   UpdateUserFunction:
     Type: AWS::Serverless::Function
     Properties:
