@@ -22,7 +22,7 @@ const postWork = event => {
   })
 }
 
-const generateRespons = (items, status) => {
+const generateResponse = (items, status) => {
   const response = {
     "statusCode": status,
     "headers": {
@@ -41,8 +41,9 @@ const formatItem = (req) => {
     'work_id': req.workId,
     'title': req.title,
     'description': req.description,
-    'user_id': '0001', // req.userId,
-    'user_name': 'testuser', // req.userName,
+    'user_id': req.userId,
+    'user_name': req.userName,
+    'user_icon_img': req.userIconImg,
     'posted_at': getUnixTime()
   }
 }
@@ -56,12 +57,12 @@ exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
   postWork(event)
     .then(res => {
-      const response = generateRespons(JSON.stringify({ work_id }), 200)
+      const response = generateResponse(JSON.stringify({ work_id }), 200)
       console.info(`response: ${res}`)
       callback(null, response);
     })
     .catch(err => {
-      const response = generateRespons(JSON.stringify(err), 500)
+      const response = generateResponse(JSON.stringify(err), 500)
       console.error(`error: ${err}`)
       callback(null, response);
     })
