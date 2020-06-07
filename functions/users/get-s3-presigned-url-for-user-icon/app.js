@@ -21,7 +21,7 @@ const getS3PresignedUrl = reqBody => {
   })
 }
 
-const generateRespons = (items, status) => {
+const generateResponse = (items, status) => {
   const response = {
     "statusCode": status,
     "headers": {
@@ -39,12 +39,12 @@ exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
   getS3PresignedUrl(event.pathParameters)
     .then(res => {
-      const response = generateRespons(JSON.stringify(res), 200)
+      const response = generateResponse(JSON.stringify(res), 200)
       console.info(`response: ${res}`)
       callback(null, response);
     })
     .catch(err => {
-      const response = generateRespons(JSON.stringify(err), 500)
+      const response = generateResponse(JSON.stringify(err), 500)
       console.error(`error: ${err}`)
       callback(null, response);
     })
