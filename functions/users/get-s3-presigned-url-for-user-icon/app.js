@@ -9,7 +9,7 @@ const getS3PresignedUrl = reqBody => {
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: BUCKET_NAME,
-      Key: `icons/${reqBody.user_id}.${reqBody.type}`,
+      Key: `icons/${reqBody.user_id}`,
       ContentType: `${reqBody.content}/${reqBody.type}`,
       Expires: 10
     };
