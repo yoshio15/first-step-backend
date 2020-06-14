@@ -19,6 +19,41 @@ const updateUser = (reqBody) => {
   })
 }
 
+// const updateUserIconImgInWorksTable = reqBody => {
+//   console.info('updateUserIconImgInWorksTable')
+//   return new Promise((resolve, reject) => {
+//     const userId = reqBody.userId
+//     const userIconImg = reqBody.userIconImg
+//     const postedWorkIdList = reqBody.postedWorkIdList
+//     const params = {
+//       RequestItems: {
+//         'works-table': postedWorkIdList.map((value, index) => {
+//           console.info(`VALUE: ${value}, INDEX: ${index}`)
+//           return {
+//             PutRequest: {
+//               Item: {
+//                 HashKey: value,
+//                 RangeKey: userId,
+//                 user_icon_img: userIconImg
+//               }
+//             }
+//           }
+//         })
+//       }
+//     }
+//     console.info(`REQUEST_UPDATE_ITEMS: ${JSON.stringify(params)}`)
+//     docClient.batchWrite(params, function (err, data) {
+//       if (err) {
+//         console.info(`ERROR: ${JSON.stringify(err)}`)
+//         reject(err)
+//       } else { 
+//         console.info(`DATA: ${JSON.stringify(data)}`)
+//         resolve(data)
+//         }
+//     })
+//   })
+// }
+
 const generateReqParams = reqBody => {
   let params = {
     TableName: 'users-table',
@@ -70,15 +105,16 @@ const generateResponse = (items, status) => {
 
 exports.lambdaHandler = function (event, context, callback) {
   console.info(`event: ${JSON.stringify(event)}`)
-  updateUser(JSON.parse(event.body))
+  const reqBody = JSON.parse(event.body)
+  updateUser(reqBody)
     .then(res => {
-      console.info(`resoleved promise response: ${JSON.stringify(res)}`)
+      console.info(`update user resoleved promise response: ${JSON.stringify(res)}`)
       const response = generateResponse(JSON.stringify(res), 200)
       callback(null, response);
     })
     .catch(err => {
       const response = generateResponse(JSON.stringify(err), 500)
-      console.error(`error: ${JSON.stringify(err)}`)
+      console.error(`update user error: ${JSON.stringify(err)}`)
       callback(null, response);
     })
 }; 

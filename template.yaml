@@ -330,6 +330,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                   - dynamodb:Scan
+                  - dynamodb:BatchWriteItem
                 Resource: !GetAtt WorksTable.Arn
               - Effect: "Allow"
                 Action:
