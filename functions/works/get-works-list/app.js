@@ -13,7 +13,8 @@ const getWorksList = () => {
         reject(err);
       } else {
         console.log(data.Items);
-        resolve(data.Items)
+        // 投稿日時の昇順に配列をソートして返す
+        resolve(data.Items.sort((a, b) => b.posted_at - a.posted_at ))
       }
     })
   })
