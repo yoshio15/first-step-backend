@@ -29,7 +29,7 @@ const setUserIcon = userId => {
     const params = {
       Bucket: BUCKET_NAME,
       CopySource: `/${BUCKET_NAME}/${DEFAULT_ICON_PATH}`,
-      Key: `icons/${userId}.png`
+      Key: `icons/${userId}`
     };
     S3.copyObject(params, function (err, data) {
       if (err) {
@@ -62,7 +62,6 @@ const formatItem = (req) => {
     'user_id': req.userId,
     'user_name': req.username,
     'registered_at': getUnixTime(),
-    'user_icon_img': `${user_id}.png`
   }
 }
 
@@ -76,7 +75,7 @@ exports.lambdaHandler = function (event, context, callback) {
   const reqBody = JSON.parse(event.body)
   Promise.all([postUser(reqBody), setUserIcon(reqBody.userId)])
     .then(res => {
-      const response = generateResponse(JSON.stringify({ user_id }), 200)
+      const response = generateResponse(JSON.stringify({}), 200)
       console.info(`response: ${JSON.stringify(res)}`)
       callback(null, response);
     })
