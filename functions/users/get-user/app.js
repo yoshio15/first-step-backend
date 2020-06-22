@@ -1,7 +1,6 @@
 'use strict';
 
 const aws = require('aws-sdk');
-const s3 = new aws.S3()
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'ap-northeast-1' });
 
 const getUserById = userId => {
@@ -22,25 +21,6 @@ const getUserById = userId => {
   })
 }
 
-const getUserIcon = userId => {
-  return new Promise((resolve, reject) => {
-    const params = {
-      Bucket: "dev-first-step-users",
-      Key: `icons/${userId}.png`
-    };
-    s3.getObject(params, function (err, res) {
-      if (err) {
-        console.info(err)
-        reject(err)
-      } else {
-        console.info(`PURE_RES: ${JSON.stringify(res)}`)
-        resolve({ icon_binary: res.Body.toString('base64') })
-      }
-    })
-  })
-}
-
-// 将来的にはQueryがかけるようにテーブル自体SimpleTableではなくしたい(脱scan)
 const getUsersWorksList = userId => {
   return new Promise((resolve, reject) => {
     const params = {
@@ -78,10 +58,10 @@ const generateResponse = (items, status) => {
 exports.lambdaHandler = function (event, context, callback) {
   const userId = event.pathParameters.user_id
   console.info(`event: ${JSON.stringify(event)}`)
-  Promise.all([getUserById(userId), getUserIcon(userId), getUsersWorksList(userId)])
+  Promise.all([getUserById(userId), getUsersWorksList(userId)])
     .then(res => {
       console.info(`resoleved promise response: ${JSON.stringify(res)}`)
-      const response = generateResponse(JSON.stringify({ ...res[0], ...res[1], ...res[2] }), 200)
+      const response = generateResponse(JSON.stringify({ ...res[0], ...res[1] }), 200)
       callback(null, response);
     })
     .catch(err => {
