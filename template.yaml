@@ -78,6 +78,25 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${PostWorkFunction}
       RetentionInDays: 3
 
+  DeleteWorkFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/works/delete-work/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt DynamoAccessRole.Arn
+      Events:
+        DeleteWork:
+          Type: Api
+          Properties:
+            Path: /delete-work/{work_id}/{user_id}
+            Method: get
+  DeleteWorkFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${DeleteWorkFunction}
+      RetentionInDays: 3
+
   GetS3PresignedUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
